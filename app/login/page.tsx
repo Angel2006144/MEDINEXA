@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 export default function Login() {
   const r = useRouter(); const [err, setErr] = useState(""), [busy, setBusy] = useState(false);
   async function go(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault(); setBusy(true); setErr(""); const d = new object.fromEntries(new FormData(e.currentTarget)as any);
+    e.preventDefault(); setBusy(true); setErr(""); const d = new Object.fromEntries(new FormData(e.currentTarget)as any);
     try { const res = await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: d.get("email"), password: d.get("password") }) });
       if (res.ok) { r.push("/dashboard"); r.refresh(); } else setErr((await res.json()).error); } catch { setErr("Network error."); }
     setBusy(false);
