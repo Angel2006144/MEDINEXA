@@ -1,0 +1,25 @@
+@tailwind base; @tailwind components; @tailwind utilities;
+:root{color-scheme:dark}
+body{background:#050816;color:#e6f1ff;font-family:var(--font-body),system-ui,sans-serif}
+.glass{background:rgba(255,255,255,.04);backdrop-filter:blur(16px);border:1px solid rgba(34,211,238,.18);border-radius:1.25rem;transition:box-shadow .3s,border-color .3s}
+a.glass:hover,.glass.hov:hover{border-color:rgba(34,211,238,.55);box-shadow:0 0 28px rgba(34,211,238,.18)}
+.btn{display:inline-block;padding:.8rem 1.6rem;border-radius:999px;font-weight:600;letter-spacing:.04em;transition:transform .2s,box-shadow .2s}
+.btn-primary{background:linear-gradient(90deg,#22d3ee,#a855f7);color:#050816}
+.btn-primary:hover{box-shadow:0 0 30px rgba(168,85,247,.5);transform:translateY(-2px)}
+.btn-ghost{border:1px solid rgba(34,211,238,.5)}
+.btn-ghost:hover{background:rgba(34,211,238,.1)}
+.hero-art{mask-image:radial-gradient(ellipse 60% 62% at 50% 50%,#000 55%,transparent 100%);-webkit-mask-image:radial-gradient(ellipse 60% 62% at 50% 50%,#000 55%,transparent 100%);animation:float 7s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-14px)}}
+.rise{animation:rise .9s cubic-bezier(.2,.7,.2,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(18px)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@keyframes scan{from{top:4%}to{top:96%}}
+.letter{display:inline-block;background:linear-gradient(180deg,#fff 30%,#67e8f9);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(34,211,238,.55));animation:letter .9s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--i)*80ms)}
+@keyframes letter{from{opacity:0;transform:translateY(45%) scale(.9);filter:blur(10px)}}
+.hero-art{mix-blend-mode:screen}
+.glow-pulse{animation:pulse 5s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.5;transform:scale(1.07)}}
+.ray{position:absolute;inset:-30%;pointer-events:none;background:conic-gradient(from 190deg at 72% 38%,transparent 0 8%,rgba(34,211,238,.10) 12%,transparent 18%,rgba(168,85,247,.10) 26%,transparent 32%);animation:spin 70s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.page-in{animation:pagein .5s ease both}
+@keyframes pagein{from{opacity:0;transform:scale(.995)}}

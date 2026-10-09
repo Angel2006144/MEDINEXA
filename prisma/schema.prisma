@@ -1,0 +1,257 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  }
+
+enum Role {
+  PATIENT
+  DOCTOR
+  HOSPITAL_ADMIN
+  SUPER_ADMIN
+}
+
+model User {
+  id             String          @id @default(cuid())
+  email          String          @unique
+  name           String
+  passwordHash   String?
+  role           Role            @default(PATIENT)
+  hospitalId     String?
+  doctorId       String?
+  reviews        Review[]
+  chats          Chat[]
+  prescriptions  Prescription[]
+  appointments   Appointment[]
+  savedHospitals SavedHospital[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model Hospital {
+  id               String               @id @default(cuid())
+  slug             String               @unique
+  name             String
+  shortDescription String
+  description      String
+  address          String
+  city             String               @default("Thrissur")
+  district         String               @default("Thrissur")
+  pincode          String
+  phone            String
+  email            String
+  website          String?
+  emergencyPhone   String
+  hasAmbulance     Boolean              @default(false)
+  open24x7         Boolean              @default(false)
+  openingHours     String
+  landmark         String?
+  insuranceInfo    String?
+  lat              Float
+  lng              Float
+  isDemo           Boolean              @default(true)
+  departments      HospitalDepartment[]
+  facilities       HospitalFacility[]
+  doctors          Doctor[]
+  reviews          Review[]
+  saved            SavedHospital[]
+  services         Service[]
+  appointments     Appointment[]
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  @@index([name])
+  @@index([lat, lng])
+}
+
+model Department {
+  id        String               @id @default(cuid())
+  name      String               @unique
+  hospitals HospitalDepartment[]
+  doctors   Doctor[]
+}
+
+model HospitalDepartment {
+  hospitalId   String
+  departmentId String
+  hospital     Hospital   @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+
+  @@id([hospitalId, departmentId])
+}
+
+model Facility {
+  id        String             @id @default(cuid())
+  name      String             @unique
+  icon      String             @default("plus")
+  hospitals HospitalFacility[]
+}
+
+model HospitalFacility {
+  hospitalId String
+  facilityId String
+  isNew      Boolean  @default(false)
+  isFeatured Boolean  @default(false)
+  hospital   Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  facility   Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@id([hospitalId, facilityId])
+}
+
+model Doctor {
+  id              String        @id @default(cuid())
+  name            String
+  specialization  String
+  experienceYears Int
+  qualifications  String
+  languages       String[]
+  bio             String
+  consultationFee Int?
+  availability    String
+  chatEnabled     Boolean       @default(true)
+  online          Boolean       @default(false)
+  isDemo          Boolean       @default(true)
+  hospitalId      String
+  departmentId    String
+  hospital        Hospital      @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  department      Department    @relation(fields: [departmentId], references: [id])
+  reviews         Review[]
+  chats           Chat[]
+  appointments    Appointment[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([specialization])
+  @@index([hospitalId, departmentId])
+}
+
+model Review {
+  id          String    @id @default(cuid())
+  rating      Int
+  text        String
+  displayName String
+  category    String?
+  verified    Boolean   @default(false)
+  isDemo      Boolean   @default(true)
+  hospitalId  String?
+  doctorId    String?
+  userId      String?
+  hospital    Hospital? @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  doctor      Doctor?   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  user        User?     @relation(fields: [userId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([hospitalId])
+  @@index([doctorId])
+}
+
+model Chat {
+  id        String    @id @default(cuid())
+  userId    String
+  doctorId  String
+  isDemo    Boolean   @default(true)
+  user      User      @relation(fields: [userId], references: [id])
+  doctor    Doctor    @relation(fields: [doctorId], references: [id])
+  messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  chatId    String
+  sender    String
+  body      String
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([chatId, createdAt])
+}
+
+model Prescription {
+  id        String     @id @default(cuid())
+  userId    String
+  fileUrl   String
+  user      User       @relation(fields: [userId], references: [id])
+  ocr       OCRResult?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model OCRResult {
+  id               String       @id @default(cuid())
+  prescriptionId   String       @unique
+  rawText          String
+  standardizedText String?
+  uncertain        Boolean      @default(false)
+  prescription     Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+  createdAt        DateTime     @default(now())
+}
+
+model ShareToken {
+  token      String    @id
+  targetType String
+  targetId   String
+  expiresAt  DateTime?
+  createdAt  DateTime  @default(now())
+}
+
+model SavedHospital {
+  userId     String
+  hospitalId String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hospital   Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+
+  @@id([userId, hospitalId])
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model Service {
+  id           String        @id @default(cuid())
+  name         String
+  description  String?
+  price        Int?
+  hospitalId   String
+  hospital     Hospital      @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([hospitalId])
+}
+
+model Appointment {
+  id          String            @id @default(cuid())
+  reference   String            @unique
+  hospitalId  String
+  doctorId    String?
+  serviceId   String?
+  userId      String?
+  patientName String
+  phone       String
+  date        DateTime          @db.Date
+  slot        String
+  reason      String?
+  status      AppointmentStatus @default(PENDING)
+  isDemo      Boolean           @default(true)
+  hospital    Hospital          @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  doctor      Doctor?           @relation(fields: [doctorId], references: [id])
+  service     Service?          @relation(fields: [serviceId], references: [id])
+  user        User?             @relation(fields: [userId], references: [id])
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([doctorId, date])
+  @@index([serviceId, date])
+  @@index([userId])
+}
